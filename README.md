@@ -57,10 +57,10 @@ I have scripts to install docker and docker-compose here:
 First, clone the repository
 
 ```sh
-git clone https://github.com/corysm1th/cloudtables_python.git
+git clone https://github.com/corysm1th/cloudtables-python.git
 ```
 
-If you're just doing a PoC, you can use the included self-signed cert.  Otherwise, place your certificate and key somewhere on the server, and create symlinks for `cloudtables/ssl/nginx.crt` and `cloudtables/ssl/nginx.key` inside the repo.  
+If you're just doing a PoC, you can `make self_signed` to generate the certs.  Otherwise, place your certificate and key somewhere on the server, and create symlinks for `cloudtables/ssl/nginx.crt` and `cloudtables/ssl/nginx.key` inside the repo.
 
 ```sh
 cd cloudtables/ssl

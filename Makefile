@@ -27,6 +27,7 @@ install:
 									python ./manage.py migrate"
 	docker-compose run --rm app python ./manage.py collectstatic --no-input
 	docker-compose run --rm app curl -k -I https://nginx/sync
+	@echo "SUCCESS: Installation complete.  Visit CloudTables at https://hostname"
 	
 update:
 	docker-compose down

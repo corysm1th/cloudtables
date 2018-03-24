@@ -58,17 +58,18 @@ First, clone the repository
 
 ```sh
 git clone https://github.com/corysm1th/cloudtables-python.git
+cd cloudtables-python
 ```
 
 If you're just doing a PoC, you can `make self_signed` to generate the certs.  Otherwise, place your certificate and key somewhere on the server, and create symlinks for `cloudtables/ssl/nginx.crt` and `cloudtables/ssl/nginx.key` inside the repo.
 
 ```sh
-cd cloudtables/ssl
+cd cloudtables-python/ssl
 ln -s /path/to/yourcert.crt nginx.crt
 ln -s /path/to/yourcert.key nginx.key
 ```
 
-Finally, `cd` back to the parent `cloudtables` repo folder and install the software:
+Finally, `cd` back to the parent `cloudtables-python` repo folder and install the software:
 
 ```sh
 make install

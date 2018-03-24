@@ -36,8 +36,8 @@ update:
 
 self_signed:
 	wget https://github.com/corysm1th/cloudtables-python/releases/download/v1.0/cfssl
-	@cfssl selfsign cloudtables.selfsigned.smdh ./ssl/www.json \
-	| cfssljson -bare ./ssl/cloudtables.selfsigned.smdh
+	@./cfssl selfsign cloudtables.selfsigned.smdh ./ssl/www.json \
+	| ./cfssljson -bare ./ssl/cloudtables.selfsigned.smdh
 	@if [ ! -f ./ssl/nginx.crt ]; then\
 		ln -s cloudtables.selfsigned.smdh.pem ./ssl/nginx.crt;\
 	fi

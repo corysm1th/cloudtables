@@ -46,12 +46,11 @@ self_signed:
 
 reset_secrets:
 	@cp .env.default .env
-	rm -f ./ssl/nginx.crt
-	rm -f ./ssl/nginx.key
-	rm -f ./ssl/cloudtables.selfsigned.smdh*
 
 clean_certs:
 	rm -f ./ssl/cloudtables.selfsigned.smdh*
+	rm -f ./ssl/nginx.crt
+	rm -f ./ssl/nginx.key
 
 clean:
 	docker-compose down

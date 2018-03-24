@@ -35,7 +35,8 @@ update:
 	docker-compose start
 
 self_signed:
-	wget https://github.com/corysm1th/cloudtables-python/releases/download/v1.0/cfssl
+	wget -N https://github.com/corysm1th/cloudtables-python/releases/download/v1.0/cfssl
+	sudo chmod +x ./cfssl
 	@./cfssl selfsign cloudtables.selfsigned.smdh ./ssl/www.json \
 	| ./cfssljson -bare ./ssl/cloudtables.selfsigned.smdh
 	@if [ ! -f ./ssl/nginx.crt ]; then\

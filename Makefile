@@ -47,6 +47,7 @@ self_signed:
 	@if [ ! -f ./ssl/nginx.key ]; then\
 		ln -s cloudtables.selfsigned.smdh-key.pem ./ssl/nginx.key;\
 	fi
+	@echo "SUCCESS: Continue the installation by running 'make install'"
 
 reset_secrets:
 	@cp .env.default .env

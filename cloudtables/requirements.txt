@@ -1,0 +1,6 @@
+boto
+django-bootstrap-ui
+ConfigParser
+Django
+gunicorn
+psycopg2

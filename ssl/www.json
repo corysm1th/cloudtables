@@ -1,7 +1,7 @@
 {
-    "CN": "cloudtables.defaultcert.smdh",
+    "CN": "cloudtables.selfsigned.smdh",
     "hosts": [
-        "cloudtables.defaultcert.smdh",
+        "cloudtables.selfsigned.smdh",
         "cloudtables"
     ],
     "key": {

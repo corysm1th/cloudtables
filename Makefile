@@ -26,7 +26,7 @@ install:
 	docker-compose run --rm app sh -c "python ./manage.py makemigrations cloudtablesui && \
 									python ./manage.py migrate"
 	docker-compose run --rm app python ./manage.py collectstatic --no-input
-	docker-compose run --rm app curl -I http://nginx/sync
+	docker-compose run --rm app curl -k -I https://nginx/sync
 	
 update:
 	docker-compose down

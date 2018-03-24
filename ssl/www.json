@@ -1,0 +1,18 @@
+{
+    "CN": "cloudtables.defaultcert.smdh",
+    "hosts": [
+        "cloudtables.defaultcert.smdh",
+        "cloudtables"
+    ],
+    "key": {
+        "algo": "ecdsa",
+        "size": 256
+    },
+    "names": [
+        {
+            "C": "US",
+            "ST": "CA",
+            "L": "San Diego"
+        }
+    ]
+}

@@ -1,4 +1,6 @@
 import boto.ec2, boto.s3, ConfigParser, os
+from ast import literal_eval
+
 from ctsync import syncec2, synceip, syncs3
 from .models import ec2, eip, s3
 from django.shortcuts import render, redirect
@@ -13,7 +15,7 @@ def index(request):
 def sync(request):
 	awscreds = ConfigParser.ConfigParser()
 	#awsregions = ['us-west-1', 'us-west-2', 'us-east-1', 'ap-northeast-1', 'ap-southeast-2', 'sa-east-1', 'ap-northeast-2', 'us-east-2', 'ap-southeast-1', 'ca-central-1', 'ap-south-1', 'eu-central-1', 'eu-west-1', 'eu-west-2']
-	ec2regions = os.environ.get('EC2_REGIONS')
+	ec2regions = literal_eval(os.environ.get('EC2_REGIONS'))
 	awscreds.read(['credentials', os.path.expanduser('~/.aws/credentials')])
 
 	for section in awscreds.sections():

@@ -5,7 +5,7 @@ from django.db import models
 # Create your models here.
 
 class ec2(models.Model):
-	name = models.SlugField(null=True, default="Sure, Not")
+	name = models.SlugField(null=True, default="None")
 	ec2id = models.SlugField(unique=True)
 	ec2type = models.SlugField()
 	keyname = models.SlugField()

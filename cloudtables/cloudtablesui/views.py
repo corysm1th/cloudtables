@@ -12,7 +12,8 @@ def index(request):
 
 def sync(request):
 	awscreds = ConfigParser.ConfigParser()
-	awsregions = ['us-west-1', 'us-west-2', 'us-east-1']
+	#awsregions = ['us-west-1', 'us-west-2', 'us-east-1']
+	awsregions = ec2.regions()
 	awscreds.read(['credentials', os.path.expanduser('~/.aws/credentials')])
 
 	for section in awscreds.sections():

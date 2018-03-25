@@ -22,6 +22,10 @@ If you skip any of these steps, your install will explode like a hot pocket in t
 
 ---
 
+### Prerequisites
+
+The docker compose config needs the `nc` utility, as this is the method used to determine when the database is ready to proceed.
+
 ### Set up AWS Credentials
 
 Start by setting up your AWS credentials file.
@@ -76,3 +80,30 @@ make install
 ```
 
 The front end will be exposed on port 443 of the host, and the inital sync should kick off automatically.
+
+## Configuration Changes
+
+By default CloudTables will iterate over all AWS regions.  If you want to reduce sync time, you can prune the list in `.env`.
+
+To put your changes into effect, just have docker compse rebuild the stack:
+
+```sh
+make update
+```
+
+## Troubleshooting
+
+If you run into issues, and have double checked the installation instructions, you can use these additional tools to resolve issues.
+
+The Makefile has some helpful scripts:
+
+* `make clean`: deletes all containers, deletes all data and static files from the host
+* `make reset_secrets`: resets the Django secret key and Postgres password, so that `make install` can generate new ones.
+* `make clean_certs`: Deletes self signed certs and all symlinks from the ./ssl folder.
+
+Sometimes it may be required to clean some stale container resources from docker.
+
+* `make clean` followed by `docker system prune` does a good job of fixing most issues.
+* `make clean` followed by `ddocker system prune -a` should wipe out pretty much everything.
+
+You can also enable debuging in `./cloudtables/cloudtables/setting.py`.  At line 28, set `DEBUG = True` and run `make update`.  Afterward, you can navigate to cloudtables in your web browser, and it will output any python stack traces, and dump the contents of all variables.  Useful for troubleshooting issues with both the UI and the sync function (located at https://hostname/sync).

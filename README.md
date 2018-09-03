@@ -1,4 +1,4 @@
-# This project is retired because I'm rewriting it in Go and React.
+# Not Maintained
 
 Feel free to submit feature requests for the new version.
 

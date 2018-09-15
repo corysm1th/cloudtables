@@ -1,5 +1,0 @@
-*.pyc
-ssl/*
-.env
-cfssl
-cfssljson

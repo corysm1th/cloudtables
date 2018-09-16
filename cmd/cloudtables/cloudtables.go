@@ -5,9 +5,10 @@ import (
 )
 
 const (
-	port = ":8443"
+	addr = ":8443"
 )
 
 func main() {
-	cloudtables.Run(port)
+	tlsConfig := cloudtables.TLSConfig{}
+	cloudtables.Run(addr, tlsConfig)
 }

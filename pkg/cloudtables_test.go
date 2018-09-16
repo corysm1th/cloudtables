@@ -55,7 +55,7 @@ var _ = Describe("Cloudtables", func() {
 					Expect(nil).To(BeNil())
 				})
 
-				Describe("GET /api/v1/listObjects", func() {
+				Describe("GET /api/v1/objects", func() {
 					It("Should return a json array of objects", func() {
 						Expect(nil).To(BeNil())
 					})

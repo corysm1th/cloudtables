@@ -52,7 +52,7 @@ sync -> sync : Calculate metrics
 sync -> db : store metrics
 end
 
-ui -> srv : GET /api/v1/listObjects
+ui -> srv : GET /api/v1/objects
 srv -> db : select all from all
 
 note right of db

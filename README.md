@@ -42,10 +42,10 @@ At a minimum, TLS certificates are required for transport security.
 Environment variables, and their default values:
 
 ```sh
-CERT_FILE="../tls/cert.pem"         # Server TLS certificate
-KEY_FILE="../tls/cert-key.pem"      # Server TLS private key
-CA_FILE="../tls/ca.pem"             # Server TLS trust chain
-MUTUAL_AUTH=false                   # Enable (true) or Disable (default) client authentication
+CERT_FILE="tls/cert.pem"         # Server TLS certificate
+KEY_FILE="tls/cert-key.pem"      # Server TLS private key
+CA_FILE="tls/ca.pem"             # Server TLS trust chain
+MUTUAL_AUTH=false                # Enable (true) or Disable (default) client authentication
 ```
 
 **Client Certificate Authentication**

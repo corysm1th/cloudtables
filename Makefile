@@ -1,7 +1,7 @@
 .PHONY: cfssl install run/server run test
 
 cert/server: cfssl
-	$(shell cd tls; cfssl gencert -initca api_authority.json | cfssljson -bare ca)
+	$(shell cd tls; cfssl gencert -initca ca_csr.json | cfssljson -bare ca)
 	$(shell cd tls; cfssl gencert \
 		-ca=ca.pem \
 		-ca-key=ca-key.pem \

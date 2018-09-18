@@ -1,0 +1,16 @@
+{
+    "CN": "CloudTables API Authority",
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+    "names": [
+        {
+            "C": "US",
+            "L": "San Diego",
+            "O": "Cory Smith",
+            "OU": "CloudTables",
+            "ST": "California"
+        }
+    ]
+}

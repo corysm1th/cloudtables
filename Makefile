@@ -1,8 +1,31 @@
-.PHONY: install run/server run test
+.PHONY: cfssl install run/server run test
 
-certs:
+cert/server: cfssl
+	$(shell cd tls; cfssl gencert -initca api_authority.json | cfssljson -bare ca)
+	$(shell cd tls; cfssl gencert \
+		-ca=ca.pem \
+		-ca-key=ca-key.pem \
+		-config=ca_config.json \
+		-profile=client-server \
+		server_csr.json | cfssljson -bare cert)
 
-certs/ui:
+cert/client:
+	$(shell cd tls; cfssl gencert \
+		-ca=ca.pem \
+		-ca-key=ca-key.pem \
+		-config=ca_config.json \
+		-profile=client \
+		client_csr.json | cfssljson -bare client)
+	$(shell cd tls; openssl pkcs12 -export -out cloudtables_user.p12 \
+		-inkey client-key.pem -in client.pem -certfile ca.pem)
+
+cert/clean:
+	$(shell rm -f tls/*.pem)
+	$(shell rm -f tls/*.csr)
+	$(shell rm -f tls/*.p12)
+
+cfssl:
+	$(shell go get -u github.com/cloudflare/cfssl/cmd/...)
 
 init/test:
 	$(shell cd pkg; ginkgo bootstrap)

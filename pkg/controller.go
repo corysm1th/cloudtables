@@ -2,20 +2,19 @@ package cloudtables
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+
+	"github.com/pkg/errors"
 )
 
-// TLSConfig stores the file paths for TLS certificates
-type TLSConfig struct {
-	APICert         string
-	APIKey          string
-	APIAuthority    string
-	ClientCert      string
-	ClientKey       string
-	ClientAuthority string
-	UICert          string
-	UIKey           string
-	UIAuthority     string
+// Config holds information about the environment
+type Config struct {
+	Addr       string `env:"ADDRESS"`
+	CertFile   string `env:"CERT_FILE"`
+	KeyFile    string `env:"KEY_FILE"`
+	CAFile     string `env:"CA_FILE"`
+	MutualAuth bool   `env:"MUTUAL_AUTH"`
 }
 
 type staticController struct{}
@@ -40,7 +39,7 @@ func (sc staticController) HandleObjects(w http.ResponseWriter, r *http.Request)
 // END ROUTES
 
 // Run bootstraps the http server.
-func Run(addr string, tlsConfig TLSConfig) {
+func Run(config *Config) {
 	vueController.registerRoutes()
 
 	css := http.Dir("../../ui/css")
@@ -48,21 +47,28 @@ func Run(addr string, tlsConfig TLSConfig) {
 	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(css)))
 	http.Handle("/js/", http.StripPrefix("/js/", http.FileServer(js)))
 
-	// TODO: Read TLSConfig from toml
-
-	// TODO: Check filesystem for UI Certificate
-
-	// TODO: Call Serve or ServeTLS
-
+	if config.MutualAuth {
+		ServeMutualAuth(config)
+	} else {
+		ServeTLS(config)
+	}
 }
 
 // ServeTLS listens for TLS connections without client authentication.
-func ServeTLS(addr string) {
-	http.ListenAndServe(addr, nil)
-	fmt.Printf("CloudTables is listening on port %v", addr)
+func ServeTLS(config *Config) {
+	err := http.ListenAndServeTLS(config.Addr, config.CertFile, config.KeyFile, nil)
+	if err != nil {
+		log.Fatalln(errors.Wrap(err, "Error opening TLS listener."))
+	}
+	fmt.Printf("CloudTables is listening on port %v", config.Addr)
 }
 
 // ServeMutualAuth authenticates clients using TLS
-func ServeMutualAuth(addr string, tlsConfig TLSConfig) {
-
+func ServeMutualAuth(config *Config) {
+	err := http.ListenAndServeTLS(config.Addr, config.CertFile, config.KeyFile, nil)
+	if err != nil {
+		log.Fatalln(errors.Wrap(err, "Error opening TLS listener."))
+	}
+	fmt.Printf("CloudTables is listening on port %v", config.Addr)
+	fmt.Printf("Mutual authentication enabled.")
 }

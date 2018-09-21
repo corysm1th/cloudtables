@@ -1,4 +1,7 @@
-.PHONY: cfssl install run/server run test
+.PHONY: build/dev cfssl install run/server run test
+
+build/dev:
+	$(shell cd pkg; go-bindata -debug -pkg cloudtables -prefix "../" ../ui/...)
 
 cert/server: cfssl
 	$(shell cd tls; cfssl gencert -initca ca_csr.json | cfssljson -bare ca)
@@ -37,7 +40,8 @@ install:
 
 run/server:
 
-run:
+run/dev: build/dev
+	$(shell go run cmd/cloudtables/cloudtables.go)
 
 test:
 	cd pkg; ginkgo

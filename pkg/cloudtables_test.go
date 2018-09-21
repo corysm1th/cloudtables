@@ -1,76 +1,73 @@
 package cloudtables_test
 
 import (
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+
+	cloudtables "github.com/corysm1th/cloudtables/pkg"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Cloudtables", func() {
-	Describe("UI", func() {
-		Context("Without UI certs on disk", func() {
-			It("Should listen on HTTP", func() {
-				Expect(nil).To(BeNil())
-			})
-		})
-
-		Context("With UI certs on disk", func() {
-			It("Should listen with TLS mutual auth", func() {
-				Expect(nil).To(BeNil())
-			})
-
-			Context("Without a valid client certificate", func() {
-				It("Should refuse connections", func() {
-					Expect(nil).To(BeNil())
-				})
-			})
-
-			Context("With a valid client certificate", func() {
-				It("Should accept UI requests", func() {
-					Expect(nil).To(BeNil())
-				})
-			})
-		})
-	})
-
 	Describe("API", func() {
-		Context("Without API certs on disk", func() {
-			It("Should listen on HTTP", func() {
-				Expect(nil).To(BeNil())
-			})
-		})
-
-		Context("With API certs on disk", func() {
-			It("Should listen on TLS", func() {
-				Expect(nil).To(BeNil())
-			})
-
-			Context("Without a valid client certificate", func() {
-				It("Should refuse connections", func() {
-					Expect(nil).To(BeNil())
-				})
+		Context("With a properly formed request", func() {
+			It("Should accept requests", func() {
+				handler := cloudtables.HandleIndex
+				r := httptest.NewRequest(http.MethodGet, "/", nil)
+				w := httptest.NewRecorder()
+				handler(w, r)
+				resp := w.Result()
+				defer resp.Body.Close()
+				body, err := ioutil.ReadAll(resp.Body)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(resp.StatusCode).To(Equal(http.StatusOK))
+				Expect(body).To(ContainSubstring("CloudTables"))
 			})
 
-			Context("With a valid client certificate", func() {
-				It("Should accept API requests", func() {
-					Expect(nil).To(BeNil())
+			Describe("GET /api/v1/objects", func() {
+				It("Should return a json array of objects", func() {
+					handler := cloudtables.HandleGetObjects
+					r := httptest.NewRequest(http.MethodGet, "/api/v1/objects", nil)
+					w := httptest.NewRecorder()
+					handler(w, r)
+					resp := w.Result()
+					defer resp.Body.Close()
+					body, err := ioutil.ReadAll(resp.Body)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(resp.StatusCode).To(Equal(http.StatusOK))
+					Expect(body).To(ContainSubstring("TODO"))
 				})
+			})
 
-				Describe("GET /api/v1/objects", func() {
-					It("Should return a json array of objects", func() {
-						Expect(nil).To(BeNil())
-					})
+			Describe("GET /api/v1/sync", func() {
+				It("Should return a status 201", func() {
+					handler := cloudtables.HandleGetSync
+					r := httptest.NewRequest(http.MethodGet, "/api/v1/sync", nil)
+					w := httptest.NewRecorder()
+					handler(w, r)
+					resp := w.Result()
+					defer resp.Body.Close()
+					body, err := ioutil.ReadAll(resp.Body)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(resp.StatusCode).To(Equal(http.StatusOK))
+					Expect(body).To(ContainSubstring("TODO"))
 				})
+			})
 
-				Describe("GET /api/v1/sync", func() {
-					It("Should return a status 201", func() {
-						Expect(nil).To(BeNil())
-					})
-				})
-
-				Describe("GET /api/v1/metrics", func() {
-					It("Should return a json array of metrics", func() {
-						Expect(nil).To(BeNil())
-					})
+			Describe("GET /api/v1/metrics", func() {
+				It("Should return a json array of metrics", func() {
+					handler := cloudtables.HandleGetMetrics
+					r := httptest.NewRequest(http.MethodGet, "/api/v1/metrics", nil)
+					w := httptest.NewRecorder()
+					handler(w, r)
+					resp := w.Result()
+					defer resp.Body.Close()
+					body, err := ioutil.ReadAll(resp.Body)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(resp.StatusCode).To(Equal(http.StatusOK))
+					Expect(body).To(ContainSubstring("TODO"))
 				})
 			})
 		})

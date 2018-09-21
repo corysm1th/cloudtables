@@ -1,3 +1,6 @@
+# CloudTables
+
+```plantuml
 @startuml
 
 !includeurl https://raw.githubusercontent.com/corysm1th/script_dumpster/master/style.puml
@@ -10,13 +13,15 @@ participant "Cloud \nProvider" as cloud
 
 note right of srv
 Read config
-    UI certificate
-    UI private key
-    Client CA pool
-if CAPool != nil
-    Run secureController()
+    Addr
+    CertFile
+    KeyFile
+    CAFile
+    MutualAuth
+if MutualAuth {
+    Run ServeMutualAuth()
 else
-    Run controller()
+    Run ServeTLS()
 end note
 
 note right of srv
@@ -77,3 +82,4 @@ srv -> db : get metrics
 srv <- db : metrics
 ui <- srv : return 200, json payload
 @enduml
+```

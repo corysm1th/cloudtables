@@ -5,7 +5,11 @@ import (
 	"log"
 	"net/http"
 
+	"goji.io"
+
+	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/pkg/errors"
+	"goji.io/pat"
 )
 
 // Config holds information about the environment
@@ -17,22 +21,36 @@ type Config struct {
 	MutualAuth bool   `env:"MUTUAL_AUTH"`
 }
 
-type staticController struct{}
+// RegisterRoutes maps API endpoints to Handler functions.
+func RegisterRoutes(mux *goji.Mux) {
+	// Load assets from go-bindata
+	css := &assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "ui/css"}
+	js := &assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "ui/js"}
 
-func (sc staticController) registerRoutes() {
-	http.HandleFunc("/", sc.HandleIndex)
-	http.HandleFunc("api/v1/objects", sc.HandleObjects)
+	mux.Handle(pat.Get("/css/"), http.StripPrefix("/css/", http.FileServer(css)))
+	mux.Handle(pat.Get("/js/"), http.StripPrefix("/js/", http.FileServer(js)))
+
+	mux.HandleFunc(pat.Get("/"), HandleIndex)
+
+	// API Routes
+	mux.HandleFunc(pat.Get("api/v1/objects"), HandleObjects)
 }
-
-var vueController staticController
 
 // BEGIN ROUTES
 // Configure route handlers in this section
-func (sc staticController) HandleIndex(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
+
+// HandleIndex serves the main UI via an index page.
+func HandleIndex(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Received request from: ", r.RemoteAddr, " at ", r.RequestURI)
+	buf, err := uiIndexHtml()
+	if err != nil {
+		http.NotFound(w, r)
+	}
+	w.Write(buf.bytes)
 }
 
-func (sc staticController) HandleObjects(w http.ResponseWriter, r *http.Request) {
+// HandleObjects returns all cloud objects in the database.
+func HandleObjects(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -40,35 +58,21 @@ func (sc staticController) HandleObjects(w http.ResponseWriter, r *http.Request)
 
 // Run bootstraps the http server.
 func Run(config *Config) {
-	vueController.registerRoutes()
-
-	css := http.Dir("../../ui/css")
-	js := http.Dir("../../ui/js")
-	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(css)))
-	http.Handle("/js/", http.StripPrefix("/js/", http.FileServer(js)))
+	mux := goji.NewMux()
+	RegisterRoutes(mux)
 
 	if config.MutualAuth {
-		ServeMutualAuth(config)
+		err := http.ListenAndServeTLS(config.Addr, config.CertFile, config.KeyFile, mux)
+		if err != nil {
+			log.Fatalln(errors.Wrap(err, "Error opening TLS listener."))
+		}
+		fmt.Printf("CloudTables is listening on port %v", config.Addr)
+		fmt.Printf("Mutual authentication enabled.")
 	} else {
-		ServeTLS(config)
+		err := http.ListenAndServeTLS(config.Addr, config.CertFile, config.KeyFile, mux)
+		if err != nil {
+			log.Fatalln(errors.Wrap(err, "Error opening TLS listener."))
+		}
+		fmt.Printf("CloudTables is listening on port %v", config.Addr)
 	}
-}
-
-// ServeTLS listens for TLS connections without client authentication.
-func ServeTLS(config *Config) {
-	err := http.ListenAndServeTLS(config.Addr, config.CertFile, config.KeyFile, nil)
-	if err != nil {
-		log.Fatalln(errors.Wrap(err, "Error opening TLS listener."))
-	}
-	fmt.Printf("CloudTables is listening on port %v", config.Addr)
-}
-
-// ServeMutualAuth authenticates clients using TLS
-func ServeMutualAuth(config *Config) {
-	err := http.ListenAndServeTLS(config.Addr, config.CertFile, config.KeyFile, nil)
-	if err != nil {
-		log.Fatalln(errors.Wrap(err, "Error opening TLS listener."))
-	}
-	fmt.Printf("CloudTables is listening on port %v", config.Addr)
-	fmt.Printf("Mutual authentication enabled.")
 }

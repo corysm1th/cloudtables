@@ -26,11 +26,11 @@ func RegisterRoutes(mux *goji.Mux) {
 	// Load assets from go-bindata
 	css := &assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "ui/css"}
 	js := &assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "ui/js"}
+	index := &assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, Prefix: "ui"}
 
-	mux.Handle(pat.Get("/css/"), http.StripPrefix("/css/", http.FileServer(css)))
-	mux.Handle(pat.Get("/js/"), http.StripPrefix("/js/", http.FileServer(js)))
-
-	mux.HandleFunc(pat.Get("/"), HandleIndex)
+	mux.Handle(pat.Get("/css/*"), http.StripPrefix("/css/", http.FileServer(css)))
+	mux.Handle(pat.Get("/js/*"), http.StripPrefix("/js/", http.FileServer(js)))
+	mux.Handle(pat.Get("/*"), http.FileServer(index))
 
 	// API Routes
 	mux.HandleFunc(pat.Get("api/v1/objects"), HandleObjects)
@@ -38,16 +38,6 @@ func RegisterRoutes(mux *goji.Mux) {
 
 // BEGIN ROUTES
 // Configure route handlers in this section
-
-// HandleIndex serves the main UI via an index page.
-func HandleIndex(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Received request from: ", r.RemoteAddr, " at ", r.RequestURI)
-	buf, err := uiIndexHtml()
-	if err != nil {
-		http.NotFound(w, r)
-	}
-	w.Write(buf.bytes)
-}
 
 // HandleObjects returns all cloud objects in the database.
 func HandleObjects(w http.ResponseWriter, r *http.Request) {

@@ -30,17 +30,37 @@ func RegisterRoutes(mux *goji.Mux) {
 
 	mux.Handle(pat.Get("/css/*"), http.StripPrefix("/css/", http.FileServer(css)))
 	mux.Handle(pat.Get("/js/*"), http.StripPrefix("/js/", http.FileServer(js)))
-	mux.Handle(pat.Get("/*"), http.FileServer(index))
+	mux.Handle(pat.Get("/ui/*"), http.StripPrefix("/ui/", http.FileServer(index)))
+	mux.HandleFunc(pat.Get("/"), HandleRoot)
+	mux.HandleFunc(pat.Get("//"), HandleRoot)
 
 	// API Routes
-	mux.HandleFunc(pat.Get("api/v1/objects"), HandleObjects)
+	mux.HandleFunc(pat.Get("/api/v1/objects"), HandleGetObjects)
+	mux.HandleFunc(pat.Get("/api/v1/sync"), HandleGetSync)
+	mux.HandleFunc(pat.Get("/api/v1/metrics"), HandleGetMetrics)
 }
 
 // BEGIN ROUTES
 // Configure route handlers in this section
 
-// HandleObjects returns all cloud objects in the database.
-func HandleObjects(w http.ResponseWriter, r *http.Request) {
+// HandleRoot redirects to the UI
+func HandleRoot(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/ui/", http.StatusPermanentRedirect)
+}
+
+// HandleGetObjects returns all cloud objects in the database.
+func HandleGetObjects(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+}
+
+// HandleGetSync triggers a sync action between the cloud providers
+// and the local database
+func HandleGetSync(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusAccepted)
+}
+
+// HandleGetMetrics retrieves metrics about the objects stored in cloudtables
+func HandleGetMetrics(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 

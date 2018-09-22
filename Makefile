@@ -1,66 +1,47 @@
-#!make
-include .env
+.PHONY: build/dev cfssl install run/server run test
+
+build/dev:
+	$(shell cd pkg; go-bindata -debug -pkg cloudtables -prefix "../" ../ui/...)
+
+cert/server: cfssl
+	$(shell cd tls; cfssl gencert -initca ca_csr.json | cfssljson -bare ca)
+	$(shell cd tls; cfssl gencert \
+		-ca=ca.pem \
+		-ca-key=ca-key.pem \
+		-config=ca_config.json \
+		-profile=client-server \
+		server_csr.json | cfssljson -bare cert)
+
+cert/client:
+	$(shell cd tls; cfssl gencert \
+		-ca=ca.pem \
+		-ca-key=ca-key.pem \
+		-config=ca_config.json \
+		-profile=client \
+		client_csr.json | cfssljson -bare client)
+	$(shell cd tls; openssl pkcs12 -export -out cloudtables_user.p12 \
+		-inkey client-key.pem -in client.pem -certfile ca.pem)
+
+cert/clean:
+	$(shell rm -f tls/*.pem)
+	$(shell rm -f tls/*.csr)
+	$(shell rm -f tls/*.p12)
+
+cfssl:
+	$(shell go get -u github.com/cloudflare/cfssl/cmd/...)
+
+init/test:
+	$(shell cd pkg; ginkgo bootstrap)
+	$(shell cd pkg; ginkgo generate cloudtables)
 
 install:
-	@grep "DJANGO_CHANGE_ME" .env && \
-		sed -i "s/DJANGO_CHANGE_ME/\"$(shell python secret_generator.py)\"/" .env || \
-		echo "Skipping DJANGO_PASSWORD generation"
-	@grep "PG_CHANGE_ME" .env && \
-		sed -i "s/PG_CHANGE_ME/\"$(shell python secret_generator.py)\"/" .env || \
-		echo "Skipping POSTGRES_PASSWORD generation"
-	@if [ ! -f ./ssl/nginx.crt ]; then\
-		echo "ERROR: Could not find symlink for ./ssl/nginx.crt";\
-		exit 1;\
-	fi
-	@if [ ! -f ./ssl/nginx.key ]; then\
-		echo "ERROR: Could not find symlink for ./ssl/nginx.key";\
-		exit 1;\
-	fi
-	sudo mkdir -p $(PGDATA)
-	sudo mkdir -p $(CT_STATIC)
-	docker-compose build
-	docker-compose up --no-start
-	docker-compose start
-	@echo "Waiting for DB..."
-	@docker-compose run --rm app sh -c "while ! nc -z db 5432 </dev/null; do sleep 5; done"
-	docker-compose run --rm app sh -c "python ./manage.py makemigrations cloudtablesui && \
-									python ./manage.py migrate"
-	docker-compose run --rm app python ./manage.py collectstatic --no-input
-	docker-compose run --rm app curl -k -I https://nginx/sync
-	@echo "SUCCESS: Installation complete.  Visit CloudTables at https://hostname"
-	
-update:
-	docker-compose down
-	docker-compose build
-	docker-compose up --no-start
-	docker-compose start
+	export GO111MODULE=on; cd pkg; go build .
+	export GO111MODULE=on; cd cmd/cloudtables; go build .
 
-self_signed:
-	wget -N https://github.com/corysm1th/cloudtables-python/releases/download/v1.0/cfssl
-	wget -N https://github.com/corysm1th/cloudtables-python/releases/download/v1.0/cfssljson
-	sudo chmod +x ./cfssl ./cfssljson
-	@./cfssl selfsign cloudtables.selfsigned.smdh ./ssl/www.json \
-	| ./cfssljson -bare ./ssl/cloudtables.selfsigned.smdh
-	@if [ ! -f ./ssl/nginx.crt ]; then\
-		ln -s cloudtables.selfsigned.smdh.pem ./ssl/nginx.crt;\
-	fi
-	@if [ ! -f ./ssl/nginx.key ]; then\
-		ln -s cloudtables.selfsigned.smdh-key.pem ./ssl/nginx.key;\
-	fi
-	@echo "SUCCESS: Continue the installation by running 'make install'"
+run/server:
 
-reset_secrets:
-	@cp .env.default .env
-
-clean_certs:
-	rm -f ./ssl/cloudtables.selfsigned.smdh*
-	rm -f ./ssl/nginx.crt
-	rm -f ./ssl/nginx.key
-
-clean:
-	docker-compose down
-	sudo rm -Rf $(PGDATA)
-	sudo rm -Rf $(CT_STATIC)
+run/dev: build/dev
+	$(shell go run cmd/cloudtables/cloudtables.go)
 
 test:
-	@echo "No tests yet."
+	cd pkg; ginkgo

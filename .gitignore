@@ -1,5 +1,3 @@
-*.pyc
-ssl/*
-.env
-cfssl
-cfssljson
+tls/*.pem
+tls/*.csr
+tls/*.p12

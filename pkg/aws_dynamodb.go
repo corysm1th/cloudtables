@@ -8,13 +8,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-// DynamoDBTableObj represents a DynamoDB Table
-type DynamoDBTableObj struct {
-	Account string
-	Region  string
-	Name    string
-}
-
 // SyncDynamoDB fetches DynamoDB resources, and stores them in the database.
 func SyncDynamoDB(svc dynamodbiface.DynamoDBAPI, account, region string) error {
 	t := dynamodb.ListTablesInput{}

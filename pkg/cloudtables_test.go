@@ -4,9 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
-
+	mock "github.com/corysm1th/cloudtables/mock"
 	cloudtables "github.com/corysm1th/cloudtables/pkg"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -76,7 +74,10 @@ var _ = Describe("Cloudtables", func() {
 				})
 
 				It("Should parse EC2 instances", func() {
-					Expect(nil).To(BeNil())
+					account, region := "Test_Account", "us-west-2"
+					mockSvc := &mock.EC2Client{}
+					err := cloudtables.SyncDescribeInstances(mockSvc, account, region)
+					Expect(err).ToNot(HaveOccurred())
 				})
 
 				It("Should parse Elastic IP addresses", func() {
@@ -101,7 +102,7 @@ var _ = Describe("Cloudtables", func() {
 
 				It("Should parse DynamoDB Instances", func() {
 					account, region := "Test_Account", "us-west-2"
-					mockSvc := &mockDynamoDBClient{}
+					mockSvc := &mock.DynamoDBClient{}
 					err := cloudtables.SyncDynamoDB(mockSvc, account, region)
 					Expect(err).ToNot(HaveOccurred())
 
@@ -183,12 +184,3 @@ var _ = Describe("Cloudtables", func() {
 		})
 	})
 })
-
-type mockDynamoDBClient struct{ dynamodbiface.DynamoDBAPI }
-
-func (m *mockDynamoDBClient) ListTables(i *dynamodb.ListTablesInput) (*dynamodb.ListTablesOutput, error) {
-	table1, table2 := "TestTable1", "TestTable2"
-	t1, t2 := &table1, &table2
-	data := dynamodb.ListTablesOutput{TableNames: []*string{t1, t2}}
-	return &data, nil
-}

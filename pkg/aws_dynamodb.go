@@ -23,5 +23,7 @@ func SyncDynamoDB(svc dynamodbiface.DynamoDBAPI, account, region string) error {
 		o.Name = *n
 		log.Printf("Account: %s  Region: %s  Table: %s", o.Account, o.Region, o.Name)
 	}
+	// TODO: Store table in dynamodb_table_obj
+	// TODO: Store count in metric
 	return nil
 }

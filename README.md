@@ -11,6 +11,7 @@ On the roadmap:
 * 80% or better test coverage
 * Support for more resource types
 * Support for more cloud providers
+* Add custom columns for tags
 
 ## Installation
 

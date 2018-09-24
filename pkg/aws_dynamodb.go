@@ -1,29 +1,27 @@
 package cloudtables
 
 import (
-	"log"
-
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/pkg/errors"
 )
 
-// SyncDynamoDB fetches DynamoDB resources, and stores them in the database.
-func SyncDynamoDB(svc dynamodbiface.DynamoDBAPI, account, region string) error {
-	t := dynamodb.ListTablesInput{}
-	o := DynamoDBTableObj{}
-	o.Account = account
-	o.Region = region
-	tables, err := svc.ListTables(&t)
+// GetDynamoDB fetches DynamoDB resources
+func GetDynamoDB(svc dynamodbiface.DynamoDBAPI, account, region string) (*[]DynamoDBObj, int, error) {
+	var DynamoDBObjs []DynamoDBObj
+	var count int
+	input := dynamodb.ListTablesInput{}
+	obj := DynamoDBObj{}
+	obj.Account = account
+	obj.Region = region
+	tables, err := svc.ListTables(&input)
 	if err != nil {
-		return errors.Wrap(err, "ListTables Request Failed.")
+		return &DynamoDBObjs, count, errors.Wrap(err, "ListTables Request Failed.")
 	}
-	log.Println("DynamoDB")
+	count = len(tables.TableNames)
 	for _, n := range tables.TableNames {
-		o.Name = *n
-		log.Printf("Account: %s  Region: %s  Table: %s", o.Account, o.Region, o.Name)
+		obj.Name = *n
+		DynamoDBObjs = append(DynamoDBObjs, obj)
 	}
-	// TODO: Store table in dynamodb_table_obj
-	// TODO: Store count in metric
-	return nil
+	return &DynamoDBObjs, count, nil
 }

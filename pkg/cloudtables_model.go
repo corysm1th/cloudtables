@@ -1,14 +1,14 @@
 package cloudtables
 
-// DynamoDBTableObj represents a DynamoDB Table
-type DynamoDBTableObj struct {
+// DynamoDBObj represents a DynamoDB Table
+type DynamoDBObj struct {
 	Account string
 	Region  string
 	Name    string
 }
 
-// EC2Obj represents an EC2 instance.
-type EC2Obj struct {
+// EC2InstObj represents an EC2 instance.
+type EC2InstObj struct {
 	ID               string
 	Name             string
 	Type             string
@@ -20,17 +20,17 @@ type EC2Obj struct {
 	Region           string
 }
 
-// EIP represents an AWS Elastic IP address.
-type EIP struct {
-	pubIP      string
-	domain     string
-	instanceID string
-	awsAcct    string
-	region     string
+// EC2EIPObj represents an AWS Elastic IP address.
+type EC2EIPObj struct {
+	PublicIP   string
+	Domain     string
+	InstanceID string
+	Account    string
+	Region     string
 }
 
-// S3Bucket represents an AWS S3 bucket
-type S3Bucket struct {
-	bucket  string
-	awsAcct string
+// S3BucketObj represents an AWS S3 bucket
+type S3BucketObj struct {
+	Name    string
+	Account string
 }

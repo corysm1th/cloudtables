@@ -1,7 +1,4 @@
-# CloudTables
-
-```plantuml
-@startuml
+@startuml CloudTables
 
 !includeurl https://raw.githubusercontent.com/corysm1th/script_dumpster/master/style.puml
 
@@ -46,11 +43,19 @@ srv -> sync : sync
 group For each account
 sync -> sync : if Account.SyncState = InProgress {return}
 sync -> db : Account.SyncState = InProgress
-sync -> cloud : Get all objects
+sync -> cloud : Get all objects \n from cloud
 group if err != nil
 sync -> db : Account.SyncState = Error
 sync -> sync : log err
 end
+sync -> db : Get all objects from db
+group if err != nil
+sync -> db : Account.SyncState = Error
+sync -> sync : log err
+end
+sync -> sync : diff cloud objects with db objects
+sync -> db : delete stale objects
+sync -> db : upsert cloud objects
 sync -> db : Store all objects
 sync -> db : Account.SycState = Complete
 sync -> sync : Calculate metrics
@@ -82,4 +87,3 @@ srv -> db : get metrics
 srv <- db : metrics
 ui <- srv : return 200, json payload
 @enduml
-```

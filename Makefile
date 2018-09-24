@@ -1,7 +1,11 @@
-.PHONY: build/dev cfssl install run/server run test
+.PHONY: build/dev build cfssl install run/server run test
 
-build/dev:
+build/dev: build
 	$(shell cd pkg; go-bindata -debug -pkg cloudtables -prefix "../" ../ui/...)
+
+build:
+	$(shell export GO111MODULE=on; go build pkg/*)
+	$(shell export GO111MODULE=on; go build mock/*)
 
 cert/server: cfssl
 	$(shell cd tls; cfssl gencert -initca ca_csr.json | cfssljson -bare ca)
@@ -35,8 +39,6 @@ init/test:
 	$(shell cd pkg; ginkgo generate cloudtables)
 
 install:
-	export GO111MODULE=on; cd pkg; go build .
-	export GO111MODULE=on; cd cmd/cloudtables; go build .
 
 run/server:
 
@@ -45,3 +47,6 @@ run/dev: build/dev
 
 test:
 	cd pkg; ginkgo
+
+test/debug:
+	cd pkg; DEBUG=true ginkgo

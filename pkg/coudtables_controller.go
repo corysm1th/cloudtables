@@ -1,9 +1,10 @@
 package cloudtables
 
 import (
-	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	"goji.io"
 
@@ -19,6 +20,7 @@ type Config struct {
 	KeyFile    string `env:"KEY_FILE"`
 	CAFile     string `env:"CA_FILE"`
 	MutualAuth bool   `env:"MUTUAL_AUTH"`
+	Debug      bool   `env:"DEBUG"`
 }
 
 // RegisterRoutes maps API endpoints to Handler functions.
@@ -66,8 +68,15 @@ func HandleGetMetrics(w http.ResponseWriter, r *http.Request) {
 
 // END ROUTES
 
-// Run bootstraps the http server.
+// Run accepts a config, and bootstraps the http server.
 func Run(config *Config) {
+	// Enable debug logging if DEBUG env variable set to true.
+	debug := log.Logger{}
+	debug.SetOutput(ioutil.Discard)
+	if config.Debug {
+		debug.SetOutput(os.Stdout)
+	}
+
 	mux := goji.NewMux()
 	RegisterRoutes(mux)
 
@@ -76,13 +85,13 @@ func Run(config *Config) {
 		if err != nil {
 			log.Fatalln(errors.Wrap(err, "Error opening TLS listener."))
 		}
-		fmt.Printf("CloudTables is listening on port %v", config.Addr)
-		fmt.Printf("Mutual authentication enabled.")
+		log.Printf("CloudTables is listening on port %v", config.Addr)
+		log.Printf("Mutual authentication enabled.")
 	} else {
 		err := http.ListenAndServeTLS(config.Addr, config.CertFile, config.KeyFile, mux)
 		if err != nil {
 			log.Fatalln(errors.Wrap(err, "Error opening TLS listener."))
 		}
-		fmt.Printf("CloudTables is listening on port %v", config.Addr)
+		log.Printf("CloudTables is listening on port %v", config.Addr)
 	}
 }

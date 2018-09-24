@@ -1,8 +1,11 @@
 package cloudtables_test
 
 import (
+	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 
 	mock "github.com/corysm1th/cloudtables/mock"
 	cloudtables "github.com/corysm1th/cloudtables/pkg"
@@ -11,6 +14,12 @@ import (
 )
 
 var _ = Describe("Cloudtables", func() {
+	debug := log.Logger{}
+	debug.SetOutput(ioutil.Discard)
+	if os.Getenv("DEBUG") == "true" {
+		debug.Println("Debug On")
+		debug.SetOutput(os.Stdout)
+	}
 	Describe("API", func() {
 		Context("With a properly formed request", func() {
 			Describe("GET /api/v1/objects", func() {
@@ -74,14 +83,28 @@ var _ = Describe("Cloudtables", func() {
 				})
 
 				It("Should parse EC2 instances", func() {
+					debug.Println("EC2 Instances")
 					account, region := "Test_Account", "us-west-2"
 					mockSvc := &mock.EC2Client{}
-					err := cloudtables.SyncDescribeInstances(mockSvc, account, region)
+					e, count, err := cloudtables.GetAWSInstances(mockSvc, account, region)
 					Expect(err).ToNot(HaveOccurred())
+					Expect(count).To(Equal(1))
+					for _, obj := range *e {
+						debug.Printf("Account: %s  Region: %s  ID: %s  ", obj.Account, obj.Region, obj.Name)
+					}
 				})
 
 				It("Should parse Elastic IP addresses", func() {
-					Expect(nil).To(BeNil())
+					debug.Println("Elastic IPs")
+					account, region := "Test_Account", "us-west-2"
+					mockSvc := &mock.EC2Client{}
+					e, count, err := cloudtables.GetAWSAddresses(mockSvc, account, region)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(count).To(Equal(1))
+					for _, obj := range *e {
+						debug.Printf("Account: %s  Region: %s  IP: %s  ", obj.Account, obj.Region, obj.PublicIP)
+						Expect(obj.Account).To(Equal("Test_Account"))
+					}
 				})
 
 				It("Should parse Route53 records", func() {
@@ -101,15 +124,34 @@ var _ = Describe("Cloudtables", func() {
 				})
 
 				It("Should parse DynamoDB Instances", func() {
+					debug.Println("DynamoDB Tables")
 					account, region := "Test_Account", "us-west-2"
 					mockSvc := &mock.DynamoDBClient{}
-					err := cloudtables.SyncDynamoDB(mockSvc, account, region)
+					d, count, err := cloudtables.GetDynamoDB(mockSvc, account, region)
 					Expect(err).ToNot(HaveOccurred())
+					Expect(count).To(Equal(2))
+					debug.Println("DynamoDB:")
+					for _, table := range *d {
+						Expect(table.Account).To(Equal("Test_Account"))
+						debug.Printf("Account: %s  Region: %s  Table: %s", table.Account, table.Region, table.Name)
+					}
 
 				})
 
 				It("Should parse Elastic Container Service Instances", func() {
 					Expect(nil).To(BeNil())
+				})
+
+				It("Should parse S3 Buckets", func() {
+					debug.Println("S3 Buckets")
+					account := "Test_Account"
+					mockSvc := &mock.S3Client{}
+					b, count, err := cloudtables.GetAWSBuckets(mockSvc, account)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(count).To(Equal(3))
+					for _, obj := range *b {
+						debug.Printf("Account: %s  Name: %s  ", obj.Account, obj.Name)
+					}
 				})
 
 				It("Should update progress when finished", func() {

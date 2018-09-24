@@ -31,3 +31,11 @@ func (e *EC2Client) DescribeInstances(i *ec2.DescribeInstancesInput) (*ec2.Descr
 	}
 	return &r, nil
 }
+
+// DescribeAddresses returns a mock Elastic IP address
+func (e *EC2Client) DescribeAddresses(input *ec2.DescribeAddressesInput) (*ec2.DescribeAddressesOutput, error) {
+	domain, inst, pubIP := "devops4.life", "i-cjdu38ok3jd839ck3", "192.0.2.100"
+	addr := ec2.Address{Domain: &domain, InstanceId: &inst, PublicIp: &pubIP}
+	r := ec2.DescribeAddressesOutput{Addresses: []*ec2.Address{&addr}}
+	return &r, nil
+}

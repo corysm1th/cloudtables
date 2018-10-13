@@ -89,7 +89,7 @@ var _ = Describe("Cloudtables", func() {
 					e, count, err := cloudtables.GetAWSInstances(mockSvc, account, region)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(count).To(Equal(1))
-					for _, obj := range *e {
+					for _, obj := range e {
 						debug.Printf("Account: %s  Region: %s  ID: %s  ", obj.Account, obj.Region, obj.Name)
 					}
 				})
@@ -101,7 +101,7 @@ var _ = Describe("Cloudtables", func() {
 					e, count, err := cloudtables.GetAWSAddresses(mockSvc, account, region)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(count).To(Equal(1))
-					for _, obj := range *e {
+					for _, obj := range e {
 						debug.Printf("Account: %s  Region: %s  IP: %s  ", obj.Account, obj.Region, obj.PublicIP)
 						Expect(obj.Account).To(Equal("Test_Account"))
 					}
@@ -131,7 +131,7 @@ var _ = Describe("Cloudtables", func() {
 					Expect(err).ToNot(HaveOccurred())
 					Expect(count).To(Equal(2))
 					debug.Println("DynamoDB:")
-					for _, table := range *d {
+					for _, table := range d {
 						Expect(table.Account).To(Equal("Test_Account"))
 						debug.Printf("Account: %s  Region: %s  Table: %s", table.Account, table.Region, table.Name)
 					}
@@ -149,7 +149,7 @@ var _ = Describe("Cloudtables", func() {
 					b, count, err := cloudtables.GetAWSBuckets(mockSvc, account)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(count).To(Equal(3))
-					for _, obj := range *b {
+					for _, obj := range b {
 						debug.Printf("Account: %s  Name: %s  ", obj.Account, obj.Name)
 					}
 				})

@@ -7,20 +7,20 @@ import (
 )
 
 // GetAWSBuckets fetches AWS S3 buckets.
-func GetAWSBuckets(svc s3iface.S3API, account string) (*[]S3BucketObj, int, error) {
-	var buckets []S3BucketObj
+func GetAWSBuckets(svc s3iface.S3API, account string) ([]*S3BucketObj, int, error) {
+	var buckets []*S3BucketObj
 	input := s3.ListBucketsInput{}
-	obj := S3BucketObj{}
+	obj := &S3BucketObj{}
 	obj.Account = account
 	var count int
 	resp, err := svc.ListBuckets(&input)
 	if err != nil {
-		return &buckets, count, errors.Wrap(err, "ListBuckets request failed.")
+		return buckets, count, errors.Wrap(err, "ListBuckets request failed.")
 	}
 	count += len(resp.Buckets)
 	for _, b := range resp.Buckets {
 		obj.Name = *b.Name
 		buckets = append(buckets, obj)
 	}
-	return &buckets, count, nil
+	return buckets, count, nil
 }

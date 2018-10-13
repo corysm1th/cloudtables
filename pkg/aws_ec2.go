@@ -7,16 +7,16 @@ import (
 )
 
 // GetAWSAddresses fetches EC2 Elastic IP addresses.
-func GetAWSAddresses(svc ec2iface.EC2API, account, region string) (*[]EC2EIPObj, int, error) {
-	var EC2EIPObjs []EC2EIPObj
+func GetAWSAddresses(svc ec2iface.EC2API, account, region string) ([]*EC2EIPObj, int, error) {
+	var EC2EIPObjs []*EC2EIPObj
 	input := ec2.DescribeAddressesInput{}
-	obj := EC2EIPObj{}
+	obj := &EC2EIPObj{}
 	obj.Account = account
 	obj.Region = region
 	var count int
 	addrs, err := svc.DescribeAddresses(&input)
 	if err != nil {
-		return &EC2EIPObjs, count, errors.Wrap(err, "DescribeAddresses request failed.")
+		return EC2EIPObjs, count, errors.Wrap(err, "DescribeAddresses request failed.")
 	}
 	count += len(addrs.Addresses)
 	for _, ip := range addrs.Addresses {
@@ -25,20 +25,20 @@ func GetAWSAddresses(svc ec2iface.EC2API, account, region string) (*[]EC2EIPObj,
 		obj.InstanceID = *ip.InstanceId
 		EC2EIPObjs = append(EC2EIPObjs, obj)
 	}
-	return &EC2EIPObjs, count, nil
+	return EC2EIPObjs, count, nil
 }
 
 // GetAWSInstances fetches EC2 Instances.
-func GetAWSInstances(svc ec2iface.EC2API, account, region string) (*[]EC2InstObj, int, error) {
-	var EC2InstObjs []EC2InstObj
+func GetAWSInstances(svc ec2iface.EC2API, account, region string) ([]*EC2InstObj, int, error) {
+	var EC2InstObjs []*EC2InstObj
 	input := ec2.DescribeInstancesInput{}
-	obj := EC2InstObj{}
+	obj := &EC2InstObj{}
 	obj.Account = account
 	obj.Region = region
 	var count int
 	instances, err := svc.DescribeInstances(&input)
 	if err != nil {
-		return &EC2InstObjs, count, errors.Wrap(err, "DescribeInstances request failed.")
+		return EC2InstObjs, count, errors.Wrap(err, "DescribeInstances request failed.")
 	}
 	for i, resv := range instances.Reservations {
 		count += len(resv.Instances)
@@ -53,7 +53,7 @@ func GetAWSInstances(svc ec2iface.EC2API, account, region string) (*[]EC2InstObj
 			EC2InstObjs = append(EC2InstObjs, obj)
 		}
 	}
-	return &EC2InstObjs, count, nil
+	return EC2InstObjs, count, nil
 }
 
 // Returns the value of an EC2 tag with a Key of "Name"

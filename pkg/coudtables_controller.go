@@ -77,6 +77,10 @@ func Run(config *Config) {
 		debug.SetOutput(os.Stdout)
 	}
 
+	// Assert storage implements the Storage interface
+	var _ Storage = StorageMem{}
+	s := StorageMem{}
+
 	mux := goji.NewMux()
 	RegisterRoutes(mux)
 

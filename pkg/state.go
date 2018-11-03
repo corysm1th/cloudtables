@@ -8,16 +8,18 @@ import (
 
 const (
 	// Valid States
+
 	SyncInProgress = "SyncInProgress"
 	SyncComplete   = "SyncComplete"
 
 	// Valid Providers
+
 	AWS = "AWS"
 )
 
-// SyncState is a state machine that tracks the synchronization status of
+// State is a state machine that tracks the status of
 // all accounts being managed by CloudTables
-type SyncState struct {
+type State struct {
 	Accounts []Account
 }
 
@@ -28,14 +30,14 @@ type Account struct {
 	State    string
 }
 
-// NewSyncState returns a pointer to a SyncState
-func NewSyncState() *SyncState {
-	s := &SyncState{}
+// NewState returns a pointer to a State
+func NewState() *State {
+	s := &State{}
 	return s
 }
 
 // AddAccount adds an account to the state machine
-func (s *SyncState) AddAccount(provider, name string) error {
+func (s *State) AddAccount(provider, name string) error {
 	a := Account{State: "stale"}
 	switch provider {
 	case AWS:
@@ -51,7 +53,7 @@ func (s *SyncState) AddAccount(provider, name string) error {
 }
 
 // SetState sets the state of an account.  Valid states are "in_progress", and "complete"
-func (s *SyncState) SetState(provider, name, state string) error {
+func (s *State) SetState(provider, name, state string) error {
 	// Check for empty values
 	if provider == "" {
 		return errors.New("Provider required")
@@ -79,4 +81,9 @@ func (s *SyncState) SetState(provider, name, state string) error {
 		}
 	}
 	return errors.New("Account not found")
+}
+
+// GetState returns the state of all accounts
+func (s *State) GetState() []Account {
+	return s.Accounts
 }

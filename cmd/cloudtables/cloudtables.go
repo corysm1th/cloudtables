@@ -62,5 +62,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	cloudtables.Run(&config, storage, listener)
+	// Initialize the state machine
+	state := cloudtables.NewSyncState()
+
+	cloudtables.Run(&config, storage, listener, state)
 }

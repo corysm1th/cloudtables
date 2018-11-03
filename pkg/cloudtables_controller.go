@@ -117,7 +117,7 @@ func handlePing(w http.ResponseWriter, r *http.Request) {
 // END ROUTES
 
 // Run accepts a config, and bootstraps the http server.
-func Run(config *Config, s Storage, listener net.Listener) {
+func Run(config *Config, s Storage, listener net.Listener, state *State) {
 	// Enable debug logging if DEBUG env variable set to true.
 	debug := log.Logger{}
 	debug.SetOutput(ioutil.Discard)

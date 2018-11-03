@@ -63,7 +63,7 @@ func main() {
 	}
 
 	// Initialize the state machine
-	state := cloudtables.NewSyncState()
+	state := cloudtables.NewState()
 
 	cloudtables.Run(&config, storage, listener, state)
 }

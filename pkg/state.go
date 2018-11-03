@@ -38,7 +38,7 @@ func NewState() *State {
 
 // AddAccount adds an account to the state machine
 func (s *State) AddAccount(provider, name string) error {
-	a := Account{State: "stale"}
+	a := Account{State: SyncInProgress}
 	switch provider {
 	case AWS:
 		a.Provider = AWS
@@ -49,6 +49,7 @@ func (s *State) AddAccount(provider, name string) error {
 		return errors.New("Name must not be empty")
 	}
 	a.Name = name
+	s.Accounts = append(s.Accounts, a)
 	return nil
 }
 
@@ -66,14 +67,14 @@ func (s *State) SetState(provider, name, state string) error {
 	}
 
 	// Set the state
-	for _, account := range s.Accounts {
+	for i, account := range s.Accounts {
 		if account.Name == name && account.Provider == provider {
 			switch state {
 			case SyncInProgress:
-				account.State = SyncInProgress
+				s.Accounts[i].State = SyncInProgress
 				return nil
 			case SyncComplete:
-				account.State = SyncComplete
+				s.Accounts[i].State = SyncComplete
 				return nil
 			default:
 				return errors.New(fmt.Sprintf("Unknown state: %s", state))

@@ -43,7 +43,8 @@ var _ = Describe("Cloudtables", func() {
 			apiStore := NewStorageMem()
 			listener, err = net.Listen("tcp", config.Addr)
 			Expect(err).To(BeNil())
-			Run(&config, apiStore, listener)
+			state := NewState()
+			Run(&config, apiStore, listener, state)
 
 		})
 		AfterEach(func() {
@@ -203,6 +204,48 @@ var _ = Describe("Cloudtables", func() {
 				})
 			})
 		})
+	})
+
+	Describe("State", func() {
+		var err error
+		var state *State
+
+		BeforeEach(func() {
+			state = NewState()
+			names := []string{"prod", "non-prod", "ops"}
+			for _, n := range names {
+				err = state.AddAccount("AWS", n)
+				Expect(err).To(BeNil())
+			}
+		})
+
+		It("Should Add and Account", func() {
+			state.AddAccount("AWS", "foo")
+			counter := 0
+			for _, a := range state.Accounts {
+				if a.Name == "foo" {
+					counter++
+				}
+			}
+			Expect(counter).To(Equal(1))
+		})
+
+		It("Should set the state of an account", func() {
+			err = state.SetState("AWS", "non-prod", SyncComplete)
+			Expect(err).To(BeNil())
+			for _, a := range state.Accounts {
+				switch a.Name {
+				case "non-prod":
+					Expect(a.State).To(Equal(SyncComplete))
+				}
+			}
+		})
+
+		It("Should return account states", func() {
+			s := state.GetState()
+			Expect(len(s)).To(Equal(3))
+		})
+
 	})
 
 	Describe("Storage", func() {

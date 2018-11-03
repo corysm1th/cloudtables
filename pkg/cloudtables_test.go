@@ -1,16 +1,23 @@
 package cloudtables_test
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
-	"net/http/httptest"
 	"os"
+	"time"
 
 	mock "github.com/corysm1th/cloudtables/mock"
-	cloudtables "github.com/corysm1th/cloudtables/pkg"
+	. "github.com/corysm1th/cloudtables/pkg"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+)
+
+var (
+	err      error
+	listener net.Listener
 )
 
 var _ = Describe("Cloudtables", func() {
@@ -20,32 +27,51 @@ var _ = Describe("Cloudtables", func() {
 		debug.Println("Debug On")
 		debug.SetOutput(os.Stdout)
 	}
+	config := Config{
+		Addr:       "127.0.0.1:9000",
+		MutualAuth: false,
+		Storage:    "memory",
+	}
+
+	// TODO: Run a sync against the mock AWS API to populate objects.
 	Describe("API", func() {
+		BeforeEach(func() {
+			// New server instance
+			apiStore := NewStorageMem()
+			listener, err = net.Listen("tcp", config.Addr)
+			Expect(err).To(BeNil())
+			Run(&config, apiStore, listener)
+
+		})
+		AfterEach(func() {
+			listener.Close()
+		})
 		Context("With a properly formed request", func() {
 			Describe("GET /api/v1/objects", func() {
 				It("Should return a json array of objects", func() {
-					Expect(nil).To(BeNil())
-					// handler := cloudtables.HandleGetObjects
-					// r := httptest.NewRequest(http.MethodGet, "/api/v1/objects", nil)
-					// w := httptest.NewRecorder()
-					// handler(w, r)
-					// resp := w.Result()
-					// defer resp.Body.Close()
-					// body, err := ioutil.ReadAll(resp.Body)
-					// Expect(err).ToNot(HaveOccurred())
-					// Expect(resp.StatusCode).To(Equal(http.StatusOK))
-					// Expect(body).To(ContainSubstring("TODO"))
+					URL := fmt.Sprintf("http://%s/api/v1/objects", config.Addr)
+					request, err := http.NewRequest("GET", URL, nil)
+					Expect(err).To(BeNil())
+					// New http client
+					client := &http.Client{
+						Timeout: 10 * time.Second,
+					}
+					resp, err := client.Do(request)
+					Expect(err).To(BeNil())
+					defer resp.Body.Close()
+					body, err := ioutil.ReadAll(resp.Body)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(resp.StatusCode).To(Equal(http.StatusOK))
+					Expect(body).ToNot(BeNil())
 				})
 			})
 
 			Describe("GET /api/v1/sync", func() {
 				It("Should return a status 202", func() {
-					handler := cloudtables.HandleGetSync
-					r := httptest.NewRequest(http.MethodGet, "/api/v1/sync", nil)
-					w := httptest.NewRecorder()
-					handler(w, r)
-					resp := w.Result()
-					Expect(resp.StatusCode).To(Equal(http.StatusAccepted))
+					// r := httptest.NewRequest(http.MethodGet, "/api/v1/sync", nil)
+					// w := httptest.NewRecorder()
+					// resp := w.Result()
+					// Expect(resp.StatusCode).To(Equal(http.StatusAccepted))
 				})
 			})
 
@@ -86,7 +112,7 @@ var _ = Describe("Cloudtables", func() {
 					debug.Println("EC2 Instances")
 					account, region := "Test_Account", "us-west-2"
 					mockSvc := &mock.EC2Client{}
-					e, count, err := cloudtables.GetAWSInstances(mockSvc, account, region)
+					e, count, err := GetAWSInstances(mockSvc, account, region)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(count).To(Equal(1))
 					for _, obj := range e {
@@ -98,7 +124,7 @@ var _ = Describe("Cloudtables", func() {
 					debug.Println("Elastic IPs")
 					account, region := "Test_Account", "us-west-2"
 					mockSvc := &mock.EC2Client{}
-					e, count, err := cloudtables.GetAWSAddresses(mockSvc, account, region)
+					e, count, err := GetAWSAddresses(mockSvc, account, region)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(count).To(Equal(1))
 					for _, obj := range e {
@@ -127,7 +153,7 @@ var _ = Describe("Cloudtables", func() {
 					debug.Println("DynamoDB Tables")
 					account, region := "Test_Account", "us-west-2"
 					mockSvc := &mock.DynamoDBClient{}
-					d, count, err := cloudtables.GetDynamoDB(mockSvc, account, region)
+					d, count, err := GetDynamoDB(mockSvc, account, region)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(count).To(Equal(2))
 					debug.Println("DynamoDB:")
@@ -146,7 +172,7 @@ var _ = Describe("Cloudtables", func() {
 					debug.Println("S3 Buckets")
 					account := "Test_Account"
 					mockSvc := &mock.S3Client{}
-					b, count, err := cloudtables.GetAWSBuckets(mockSvc, account)
+					b, count, err := GetAWSBuckets(mockSvc, account)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(count).To(Equal(3))
 					for _, obj := range b {

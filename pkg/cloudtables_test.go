@@ -18,6 +18,7 @@ import (
 var (
 	err      error
 	listener net.Listener
+	URL      string
 )
 
 var _ = Describe("Cloudtables", func() {
@@ -33,8 +34,10 @@ var _ = Describe("Cloudtables", func() {
 		Storage:    "memory",
 	}
 
+	URL = fmt.Sprintf("http://%s/api/v1", config.Addr)
+
 	// TODO: Run a sync against the mock AWS API to populate objects.
-	Describe("API", func() {
+	Describe("API /api/v1/", func() {
 		BeforeEach(func() {
 			// New server instance
 			apiStore := NewStorageMem()
@@ -47,22 +50,27 @@ var _ = Describe("Cloudtables", func() {
 			listener.Close()
 		})
 		Context("With a properly formed request", func() {
-			Describe("GET /api/v1/objects", func() {
+			Describe("GET objects", func() {
 				It("Should return a json array of objects", func() {
-					URL := fmt.Sprintf("http://%s/api/v1/objects", config.Addr)
-					request, err := http.NewRequest("GET", URL, nil)
+					URI := fmt.Sprintf("%s/objects", URL)
+					request, err := http.NewRequest("GET", URI, nil)
 					Expect(err).To(BeNil())
-					// New http client
-					client := &http.Client{
-						Timeout: 10 * time.Second,
-					}
+					client := &http.Client{Timeout: 10 * time.Second}
 					resp, err := client.Do(request)
 					Expect(err).To(BeNil())
-					defer resp.Body.Close()
-					body, err := ioutil.ReadAll(resp.Body)
-					Expect(err).ToNot(HaveOccurred())
 					Expect(resp.StatusCode).To(Equal(http.StatusOK))
-					Expect(body).ToNot(BeNil())
+				})
+			})
+
+			Describe("GET ping", func() {
+				It("Should return 204", func() {
+					URI := fmt.Sprintf("%s/ping", URL)
+					request, err := http.NewRequest("GET", URI, nil)
+					Expect(err).To(BeNil())
+					client := &http.Client{Timeout: 10 * time.Second}
+					resp, err := client.Do(request)
+					Expect(err).To(BeNil())
+					Expect(resp.StatusCode).To(Equal(http.StatusNoContent))
 				})
 			})
 

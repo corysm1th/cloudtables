@@ -19,6 +19,7 @@ var (
 	err      error
 	listener net.Listener
 	URL      string
+	store    Storage
 )
 
 var _ = Describe("Cloudtables", func() {
@@ -40,11 +41,11 @@ var _ = Describe("Cloudtables", func() {
 	Describe("API /api/v1/", func() {
 		BeforeEach(func() {
 			// New server instance
-			apiStore := NewStorageMem()
+			store = NewStorageMem()
 			listener, err = net.Listen("tcp", config.Addr)
 			Expect(err).To(BeNil())
 			state := NewState()
-			Run(&config, apiStore, listener, state)
+			Run(&config, store, listener, state)
 
 		})
 		AfterEach(func() {
@@ -250,50 +251,77 @@ var _ = Describe("Cloudtables", func() {
 
 	Describe("Storage", func() {
 		Context("With a working storage backend", func() {
+			BeforeEach(func() {
+				store = NewStorageMem()
+			})
+
 			It("Should store account information", func() {
 				Expect(nil).To(BeNil())
 			})
 
-			Context("For AWS Accounts", func() {
-				It("Should handle EC2 objects", func() {
-					//Save and Retrieve
-					Expect(nil).To(BeNil())
-				})
+			It("Should handle EC2 objects", func() {
+				//Save and Retrieve
+				objs := mock.CreateEC2Instances()
+				err := store.StoreEC2InstObj(objs)
+				Expect(err).To(BeNil())
+				ec2s, err := store.SelectEC2InstObj()
+				Expect(err).To(BeNil())
+				Expect(len(ec2s)).To(Equal(4))
+			})
 
-				It("Should handle Elastic IP addresses", func() {
-					//Save and Retrieve
-					Expect(nil).To(BeNil())
-				})
+			It("Should handle Elastic IP addresses", func() {
+				//Save and Retrieve
+				objs := mock.CreateEIPs()
+				err := store.StoreEC2EIPObj(objs)
+				Expect(err).To(BeNil())
+				eips, err := store.SelectEC2EIPObj()
+				Expect(err).To(BeNil())
+				Expect(len(eips)).To(Equal(4))
+			})
 
-				It("Should handle Route53 records", func() {
-					//Save and Retrieve
-					Expect(nil).To(BeNil())
-				})
+			It("Should handle Route53 records", func() {
+				//Save and Retrieve
+				Expect(nil).To(BeNil())
+			})
 
-				It("Should handle Elastic Load Balancers", func() {
-					//Save and Retrieve
-					Expect(nil).To(BeNil())
-				})
+			It("Should handle Elastic Load Balancers", func() {
+				//Save and Retrieve
+				Expect(nil).To(BeNil())
+			})
 
-				It("Should handle Application Load Balancers", func() {
-					//Save and Retrieve
-					Expect(nil).To(BeNil())
-				})
+			It("Should handle Application Load Balancers", func() {
+				//Save and Retrieve
+				Expect(nil).To(BeNil())
+			})
 
-				It("Should handle Relational Database Instances", func() {
-					//Save and Retrieve
-					Expect(nil).To(BeNil())
-				})
+			It("Should handle Relational Database Instances", func() {
+				//Save and Retrieve
+				Expect(nil).To(BeNil())
+			})
 
-				It("Should handle DynamoDB Instances", func() {
-					//Save and Retrieve
-					Expect(nil).To(BeNil())
-				})
+			It("Should handle DynamoDB Instances", func() {
+				//Save and Retrieve
+				objs := mock.CreateDynamoDBs()
+				err := store.StoreDynamoDBObj(objs)
+				Expect(err).To(BeNil())
+				ddbs, err := store.SelectDynamoDBObj()
+				Expect(err).To(BeNil())
+				Expect(len(ddbs)).To(Equal(4))
 
-				It("Should handle Elastic Container Service Instances", func() {
-					//Save and Retrieve
-					Expect(nil).To(BeNil())
-				})
+			})
+
+			It("Should handle Elastic Container Service Instances", func() {
+				//Save and Retrieve
+				Expect(nil).To(BeNil())
+			})
+
+			It("Should handle S3 Buckets", func() {
+				// Save and Retrieve
+				objs := mock.CreateBuckets()
+				err := store.StoreS3BucketObj(objs)
+				Expect(err).To(BeNil())
+				buckets, err := store.SelectS3BucketObj()
+				Expect(len(buckets)).To(Equal(4))
 			})
 
 			It("Should handle metrics", func() {
